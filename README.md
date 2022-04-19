@@ -1,92 +1,94 @@
-# Multi-Channel Real-Time Data Monitoring JavaScript Chart
+# Multi-channel real-time data monitoring JavaScript Chart
+
+![Multi-channel real-time data monitoring JavaScript Chart](multiChannelLineProgressiveOwnAxes.png)
+
+This demo application belongs to the set of examples for LightningChart JS, data visualization library for JavaScript.
+
+LightningChart JS is entirely GPU accelerated and performance optimized charting library for presenting massive amounts of data. It offers an easy way of creating sophisticated and interactive charts and adding them to your website or web application.
+
+The demo can be used as an example or a seed project. Local execution requires the following steps:
+
+- Make sure that relevant version of [Node.js](https://nodejs.org/en/download/) is installed
+- Open the project folder in a terminal:
+
+        npm install              # fetches dependencies
+        npm start                # builds an application and starts the development server
+
+- The application is available at *http://localhost:8080* in your browser, webpack-dev-server provides hot reload functionality.
+
+
+## Description
 
 Lightning-fast Line Chart visualization over multiple high speed (1000 Hz) trends that progress along the same scrolling Time X Axis.
 
-## Getting started
+Widely used in all kinds of fields for monitoring live data from many (hundreds or even thousands) of data sources at the same time.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Frames rendered per second (FPS) is recorded live, and displayed on the chart title. FPS of 40-60 indicates a smooth running performance.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Automatic Data Cleaning
 
-## Add your files
+One of the most ground breaking features of LightningChart JS is _automatic data cleaning_.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+Because LightningChart JS is designed for real-time data streaming solutions, it is essential that old, out of view data is automatically cleaned in the most performant manner.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/arction/lcjs/lcjs-examples/lcjs-example-0028-multiChannelLineProgressiveOwnAxes.git
-git branch -M master
-git push -uf origin master
-```
+In practice, this results in an application where you can even scroll back for some distance and see older data, but if you scroll far enough, you will find that the old data has been cleaned. This allows the application to run _forever_!
 
-## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.com/arction/lcjs/lcjs-examples/lcjs-example-0028-multiChannelLineProgressiveOwnAxes/-/settings/integrations)
+## Several times proven performance leader in JS charting
 
-## Collaborate with your team
+LightningChart is the pioneer group among JavaScript chart providers who started the study of data visualization performance comparison.
+This activity is based on open-source applications that test several different charting tools with an identical use case.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+During the test, different metrics of performance are measured which indicate how efficiently the data visualization software performs. Common metrics are:
 
-## Test and Deploy
+- _Refresh rate_ (FPS), how rapidly the displayed visualization is updated as times per second.
+- _CPU usage_ (%), how much of available computing resource is utilized.
+    - This is very important, because almost entirety of the computing power allocated to browsing a single web page is SHARED between all the content on the web page.
+    - In simple terms, if you have a badly performing chart on your web page then it means your whole page will perform bad.
+- _Data amount_, how much data can be shown. In practice, limitations could be imposed on how long history can be displayed or how precisely the data can be visualized. 
 
-Use the built-in continuous integration in GitLab.
+**Since November 2021**, LightningChart JS has dominated all performance tests which have since covered a large set of data visualization use cases in various industries:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+- [_Static line graphs_](https://www.arction.com/lightningchart-js-interactive-examples/examples/lcjs-example-0017-largeLineChartXY.html) | These days LightningChart loads far larger data sets and over 50 times faster than your average web chart. 
 
-***
+- [_Real-time line charts_](https://www.arction.com/lightningchart-js-interactive-examples/examples/lcjs-example-0010-multiChannelLineProgressive.html) | In the original motivation for its development, LightningChart JS performs over **500000** times more efficiently than the average JS chart - processing tens of thousands more data samples, using 4 times less processing power and refreshing 7 times in the same time others do just once.
 
-# Editing this README
+- [_Heatmap charts_](https://www.arction.com/lightningchart-js-interactive-examples/examples/lcjs-example-0803-scrollingHeatmap.html) | Traditional JS heatmaps can be used to visualize small grids with total of 1000 data points and under. LCJS enables visualization of BILLION large data sets that could cover for example large geographical areas such as entire countries.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+**Find all the information of open-source LightningChart JS performance studies on our** [web page](https://www.arction.com/high-performance-javascript-charts/)!
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+## API Links
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+* [XY cartesian chart]
+* [Line series]
+* [Data patterns]
+* [Axis]
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
 ## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+If you notice an error in the example code, please open an issue on [GitHub][0] repository of the entire example.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Official [API documentation][1] can be found on [Arction][2] website.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+If the docs and other materials do not solve your problem as well as implementation help is needed, ask on [StackOverflow][3] (tagged lightningchart).
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+If you think you found a bug in the LightningChart JavaScript library, please contact support@arction.com.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Direct developer email support can be purchased through a [Support Plan][4] or by contacting sales@arction.com.
 
-## License
-For open source projects, say how it is licensed.
+[0]: https://github.com/Arction/
+[1]: https://www.arction.com/lightningchart-js-api-documentation/
+[2]: https://www.arction.com
+[3]: https://stackoverflow.com/questions/tagged/lightningchart
+[4]: https://www.arction.com/support-services/
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+© Arction Ltd 2009-2020. All rights reserved.
+
+
+[XY cartesian chart]: https://www.arction.com/lightningchart-js-api-documentation/v3.4.0/classes/chartxy.html
+[Line series]: https://www.arction.com/lightningchart-js-api-documentation/v3.4.0/classes/lineseries.html
+[Data patterns]: https://www.arction.com/lightningchart-js-api-documentation/v3.4.0/interfaces/datapattern.html
+[Axis]: https://www.arction.com/lightningchart-js-api-documentation/v3.4.0/classes/axis.html
+
