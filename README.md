@@ -25,6 +25,9 @@ Widely used in all kinds of fields for monitoring live data from many (hundreds 
 
 Frames rendered per second (FPS) is recorded live, and displayed on the chart title. FPS of 40-60 indicates a smooth running performance.
 
+This line chart uses smooth anti-aliased thick lines for the best visual look, which is pretty GPU heavy with high data rates.
+For a lighter alternative you can check out [a similar line chart with best-performance graphics](https://www.arction.com/lightningchart-js-interactive-examples/examples/lcjs-example-0010-multiChannelLineProgressive.html)
+
 ## Automatic Data Cleaning
 
 One of the most ground breaking features of LightningChart JS is _automatic data cleaning_.
