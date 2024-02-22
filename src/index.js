@@ -11,12 +11,12 @@ const SIGNALS = new Array(5).fill(0).map((_, i) => ({
 const DEFAULT_X_RANGE_MS = 30 * 1000
 const PADDING_BOTTOM = 30
 const PADDING_TOP = 40
-const PADDING_LEFT = 100
 const PADDING_AXIS_Y = 6
 
 const {
     lightningChart,
     AutoCursorModes,
+    emptyFill,
     emptyLine,
     AxisTickStrategies,
     AxisScrollStrategies,
@@ -73,7 +73,7 @@ const channels = SIGNALS.map((signal, iSignal) => {
         .setTickStrategy(AxisTickStrategies.Empty)
         .setStrokeStyle(emptyLine)
         .setScrollStrategy(AxisScrollStrategies.progressive)
-        .setInterval({ start: -DEFAULT_X_RANGE_MS, end: 0, stopAxisAfter: false })
+        .setDefaultInterval((state) => ({ end: state.dataMax, start: (state.dataMax ?? 0) - DEFAULT_X_RANGE_MS, stopAxisAfter: false }))
     const axisY = chart
         .getDefaultAxisY()
         .setTickStrategy(AxisTickStrategies.Empty)
@@ -81,15 +81,17 @@ const channels = SIGNALS.map((signal, iSignal) => {
         .setTitle(signal.title)
         .setTitleRotation(0)
         .setThickness(60)
+        .setAnimationScroll(false)
 
     const series = chart
-        .addLineSeries({
-            dataPattern: { pattern: 'ProgressiveX' },
+        .addPointLineAreaSeries({
+            dataPattern: 'ProgressiveX',
             automaticColorIndex: iSignal,
         })
         .setName(`Channel ${iSignal + 1}`)
-        .setDataCleaning({ minDataPointCount: 10000 })
-        // Use 2 thickness for smooth anti-aliased thick lines with the best visual look, this is pretty GPU heavy.
+        .setAreaFillStyle(emptyFill)
+        .setMaxSampleCount(50000)
+        // Use 2 thickness for smooth anti-aliased thick lines with the best visual look
         .setStrokeStyle((style) => style.setThickness(2))
 
     return { chart, series, axisX, axisY }
@@ -190,7 +192,7 @@ const streamData = () => {
         }
         seriesNewDataPoints[iChannel] = newDataPoints
     }
-    channels.forEach((channel, iChannel) => channel.series.add(seriesNewDataPoints[iChannel]))
+    channels.forEach((channel, iChannel) => channel.series.appendJSON(seriesNewDataPoints[iChannel]))
     pushedDataCount += newDataPointsCount
     requestAnimationFrame(streamData)
 }
