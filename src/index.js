@@ -34,7 +34,7 @@ const dashboard = lightningChart()
     .Dashboard({
         numberOfColumns: 1,
         numberOfRows: SIGNALS.length,
-        // theme: Themes.darkGold
+        theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined,
     })
     .setSplitterStyle(emptyLine)
 
