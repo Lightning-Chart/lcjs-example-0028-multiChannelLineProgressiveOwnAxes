@@ -30,7 +30,9 @@ const {
 const exampleContainer = document.getElementById('chart') || document.body
 
 // NOTE: Using `Dashboard` is no longer recommended for new applications. Find latest recommendations here: https://lightningchart.com/js-charts/docs/basic-topics/grouping-charts/
-const dashboard = lightningChart()
+const dashboard = lightningChart({
+            resourcesBaseUrl: new URL(document.head.baseURI).origin + new URL(document.head.baseURI).pathname + 'resources/',
+        })
     .Dashboard({
         numberOfColumns: 1,
         numberOfRows: SIGNALS.length,
