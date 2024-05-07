@@ -9,118 +9,74 @@ const SIGNALS = new Array(5).fill(0).map((_, i) => ({
     title: `Ch ${i + 1}`,
 }))
 const DEFAULT_X_RANGE_MS = 30 * 1000
-const PADDING_BOTTOM = 30
-const PADDING_TOP = 40
-const PADDING_AXIS_Y = 6
 
 const {
     lightningChart,
-    AutoCursorModes,
     emptyFill,
     emptyLine,
     AxisTickStrategies,
     AxisScrollStrategies,
-    synchronizeAxisIntervals,
     UIOrigins,
     UIDraggingModes,
     LegendBoxBuilders,
     Themes,
 } = lcjs
 
-const exampleContainer = document.getElementById('chart') || document.body
-
-// NOTE: Using `Dashboard` is no longer recommended for new applications. Find latest recommendations here: https://lightningchart.com/js-charts/docs/basic-topics/grouping-charts/
-const dashboard = lightningChart({
+const lc = lightningChart({
             resourcesBaseUrl: new URL(document.head.baseURI).origin + new URL(document.head.baseURI).pathname + 'resources/',
         })
-    .Dashboard({
-        numberOfColumns: 1,
-        numberOfRows: SIGNALS.length,
+const chart = lc
+    .ChartXY({
         theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined,
     })
-    .setSplitterStyle(emptyLine)
+    .setTitle(`Multi-channel real-time monitoring (${SIGNALS.length} chs, 1000 Hz)`)
+    .setMouseInteractions(false)
 
-/**
- * Function updates heights of charts in Dashboard. Should be called on resize/etc. for interactive applications.
- */
-const layoutDashboard = () => {
-    const totalHeight = exampleContainer.getBoundingClientRect().height
-    const signalHeight = (totalHeight - PADDING_BOTTOM - PADDING_TOP) / SIGNALS.length
+const ekgImage = new Image()
+ekgImage.crossOrigin = ''
+ekgImage.src = document.head.baseURI + 'examples/assets/0028/ekg.png'
+const ekgIcon = chart.engine.addCustomIcon(ekgImage, { height: 18 })
 
-    SIGNALS.forEach((_, iSignal) => {
-        const chHeight = signalHeight + (iSignal === 0 ? PADDING_TOP : 0) + (iSignal === SIGNALS.length - 1 ? PADDING_BOTTOM : 0)
-        dashboard.setRowHeight(iSignal, chHeight)
-    })
-}
-requestAnimationFrame(layoutDashboard)
+const axisX = chart
+    .getDefaultAxisX()
+    .setTickStrategy(AxisTickStrategies.Time)
+    .setStrokeStyle(emptyLine)
+    .setScrollStrategy(AxisScrollStrategies.progressive)
+    .setDefaultInterval((state) => ({ end: state.dataMax, start: (state.dataMax ?? 0) - DEFAULT_X_RANGE_MS, stopAxisAfter: false }))
 
+chart.getDefaultAxisY().dispose()
 const channels = SIGNALS.map((signal, iSignal) => {
-    const chart = dashboard
-        .createChartXY({
-            columnIndex: 0,
-            rowIndex: iSignal,
-        })
-        .setTitle('')
-        .setPadding({
-            top: iSignal > 0 ? PADDING_AXIS_Y : 0,
-            bottom: iSignal < SIGNALS.length - 1 ? PADDING_AXIS_Y : 0,
-            left: 0,
-        })
-        .setAutoCursorMode(AutoCursorModes.disabled)
-        .setBackgroundStrokeStyle(emptyLine)
-        .setMouseInteractions(false)
-
-    const axisX = chart
-        .getDefaultAxisX()
-        .setTickStrategy(AxisTickStrategies.Empty)
-        .setStrokeStyle(emptyLine)
-        .setScrollStrategy(AxisScrollStrategies.progressive)
-        .setDefaultInterval((state) => ({ end: state.dataMax, start: (state.dataMax ?? 0) - DEFAULT_X_RANGE_MS, stopAxisAfter: false }))
+    const iStack = SIGNALS.length - (iSignal + 1)
     const axisY = chart
-        .getDefaultAxisY()
-        .setTickStrategy(AxisTickStrategies.Empty)
-        .setStrokeStyle(emptyLine)
+        .addAxisY({ iStack })
         .setTitle(signal.title)
         .setTitleRotation(0)
-        .setThickness(60)
         .setAnimationScroll(false)
-
+        .setMargins(iStack > 0 ? 5 : 0, iSignal === 0 ? 35 : iStack < SIGNALS.length - 1 ? 5 : 0)
+        .setMouseInteractions(false)
     const series = chart
         .addPointLineAreaSeries({
             dataPattern: 'ProgressiveX',
             automaticColorIndex: iSignal,
+            yAxis: axisY,
         })
         .setName(`Channel ${iSignal + 1}`)
         .setAreaFillStyle(emptyFill)
         .setMaxSampleCount(50000)
         // Use 2 thickness for smooth anti-aliased thick lines with the best visual look
         .setStrokeStyle((style) => style.setThickness(2))
+        .setIcon(ekgIcon)
 
-    return { chart, series, axisX, axisY }
+    // When series is hidden, also hide the entire Y axis.
+    series.onVisibleStateChanged((_, visible) => {
+        axisY.setVisible(visible)
+    })
+
+    return { series, axisY }
 })
-const channelTop = channels[0]
-const channelBottom = channels[channels.length - 1]
-
-channelTop.chart.setTitle(`Multi-channel real-time monitoring (${SIGNALS.length} chs, 1000 Hz)`)
-
-const axisX = channelBottom.axisX
-    .setThickness(PADDING_BOTTOM)
-    .setTickStrategy(AxisTickStrategies.Time, (ticks) =>
-        ticks
-            .setMajorTickStyle((major) => major.setGridStrokeStyle(emptyLine))
-            .setMinorTickStyle((minor) => minor.setGridStrokeStyle(emptyLine)),
-    )
-synchronizeAxisIntervals(...channels.map((ch) => ch.axisX))
-
-// axisX.setInterval({ start: -DEFAULT_X_RANGE_MS, end: 0, stopAxisAfter: false })
 
 // Add legend
-const legend = dashboard
-    .addLegendBox(LegendBoxBuilders.HorizontalLegendBox)
-    .setPosition({ x: 50, y: 0 })
-    .setOrigin(UIOrigins.CenterBottom)
-    .setMargin({ bottom: PADDING_BOTTOM })
-    .setDraggingMode(UIDraggingModes.notDraggable)
+const legend = chart.addLegendBox(LegendBoxBuilders.HorizontalLegendBox)
 channels.forEach((channel) => legend.add(channel.series))
 
 // Custom interactions for zooming in/out along Time axis while keeping data scrolling.
@@ -134,13 +90,13 @@ const customZoomX = (_, event) => {
     event.stopPropagation()
 }
 axisX.onAxisInteractionAreaMouseWheel(customZoomX)
+chart.onSeriesBackgroundMouseWheel(customZoomX)
 channels.forEach((channel) => {
-    channel.chart.onSeriesBackgroundMouseWheel(customZoomX)
     channel.series.onMouseWheel(customZoomX)
 })
 
 // Add LCJS user interface button for resetting view.
-const buttonReset = dashboard
+const buttonReset = chart
     .addUIElement()
     .setText('Reset')
     .setPosition({ x: 0, y: 0 })
@@ -204,14 +160,14 @@ streamData()
 let tFpsStart = window.performance.now()
 let frames = 0
 let fps = 0
-const title = channelTop.chart.getTitle()
+const title = chart.getTitle()
 const recordFrame = () => {
     frames++
     const tNow = window.performance.now()
     fps = 1000 / ((tNow - tFpsStart) / frames)
     requestAnimationFrame(recordFrame)
 
-    channelTop.chart.setTitle(`${title} (FPS: ${fps.toFixed(1)})`)
+    chart.setTitle(`${title} (FPS: ${fps.toFixed(1)})`)
 }
 requestAnimationFrame(recordFrame)
 setInterval(() => {
