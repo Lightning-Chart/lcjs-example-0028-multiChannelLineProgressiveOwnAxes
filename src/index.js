@@ -2,7 +2,7 @@
  * Lightning-fast Line Chart visualization over multiple channels that progress on the same X Axis
  */
 
-const lcjs = require('@arction/lcjs')
+const lcjs = require('@lightningchart/lcjs')
 
 // NOTE: Assuming predefined number of stacked channels.
 const SIGNALS = new Array(5).fill(0).map((_, i) => ({
