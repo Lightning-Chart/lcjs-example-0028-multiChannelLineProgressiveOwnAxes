@@ -30,7 +30,6 @@ const chart = lc
         theme: Themes[new URLSearchParams(window.location.search).get('theme') || 'darkGold'] || undefined,
     })
     .setTitle(`Multi-channel real-time monitoring (${SIGNALS.length} chs, 1000 Hz)`)
-    .setMouseInteractions(false)
 
 const ekgImage = new Image()
 ekgImage.crossOrigin = ''
@@ -53,7 +52,6 @@ const channels = SIGNALS.map((signal, iSignal) => {
         .setTitleRotation(0)
         .setAnimationScroll(false)
         .setMargins(iStack > 0 ? 5 : 0, iSignal === 0 ? 35 : iStack < SIGNALS.length - 1 ? 5 : 0)
-        .setMouseInteractions(false)
     const series = chart
         .addPointLineAreaSeries({
             dataPattern: 'ProgressiveX',
@@ -68,8 +66,9 @@ const channels = SIGNALS.map((signal, iSignal) => {
         .setIcon(ekgIcon)
 
     // When series is hidden, also hide the entire Y axis.
-    series.onVisibleStateChanged((_, visible) => {
-        axisY.setVisible(visible)
+    series.addEventListener('visiblechange', (event) => {
+        const { isVisible } = event
+        axisY.setVisible(isVisible)
     })
 
     return { series, axisY }
@@ -79,22 +78,6 @@ const channels = SIGNALS.map((signal, iSignal) => {
 const legend = chart.addLegendBox(LegendBoxBuilders.HorizontalLegendBox)
 channels.forEach((channel) => legend.add(channel.series))
 
-// Custom interactions for zooming in/out along Time axis while keeping data scrolling.
-axisX.setNibInteractionScaleByDragging(false).setNibInteractionScaleByWheeling(false).setAxisInteractionZoomByWheeling(false)
-const customZoomX = (_, event) => {
-    const interval = axisX.getInterval()
-    const range = interval.end - interval.start
-    const newRange = range + Math.sign(event.deltaY) * 0.1 * Math.abs(range)
-    axisX.setInterval({ start: interval.end - newRange, end: interval.end, stopAxisAfter: false })
-    event.preventDefault()
-    event.stopPropagation()
-}
-axisX.onAxisInteractionAreaMouseWheel(customZoomX)
-chart.onSeriesBackgroundMouseWheel(customZoomX)
-channels.forEach((channel) => {
-    channel.series.onMouseWheel(customZoomX)
-})
-
 // Add LCJS user interface button for resetting view.
 const buttonReset = chart
     .addUIElement()
@@ -103,7 +86,7 @@ const buttonReset = chart
     .setOrigin(UIOrigins.LeftBottom)
     .setMargin({ left: 4, bottom: 4 })
     .setDraggingMode(UIDraggingModes.notDraggable)
-buttonReset.onMouseClick((_) => {
+buttonReset.addEventListener('click', (event) => {
     const xMax = channels[0].series.getXMax()
     axisX.setInterval({ start: xMax - DEFAULT_X_RANGE_MS, end: xMax, stopAxisAfter: false })
     channels.forEach((channel) => channel.axisY.fit())
