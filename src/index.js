@@ -9,16 +9,16 @@ const SIGNALS = new Array(5).fill(0).map((_, i) => ({
     title: `Ch ${i + 1}`,
 }))
 const DEFAULT_X_RANGE_MS = 30 * 1000
+const dataPointsPerSecond = 1000 // 1000 Hz
 
 const {
     lightningChart,
-    emptyFill,
     emptyLine,
+    DataSetXY,
     AxisTickStrategies,
     AxisScrollStrategies,
     UIOrigins,
     UIDraggingModes,
-    LegendBoxBuilders,
     Themes,
 } = lcjs
 
@@ -40,8 +40,20 @@ const axisX = chart
     .getDefaultAxisX()
     .setTickStrategy(AxisTickStrategies.Time)
     .setStrokeStyle(emptyLine)
-    .setScrollStrategy(AxisScrollStrategies.progressive)
+    .setScrollStrategy(AxisScrollStrategies.scrolling)
     .setDefaultInterval((state) => ({ end: state.dataMax, start: (state.dataMax ?? 0) - DEFAULT_X_RANGE_MS, stopAxisAfter: false }))
+
+// Single data set with shared timestamps
+const dataSet = new DataSetXY({
+    schema: {
+        x: {
+            auto: {
+                step: 1000 / dataPointsPerSecond,
+            },
+        },
+        ...Object.fromEntries(Array.from({ length: SIGNALS.length }, (_, i) => [`y${i}`, { pattern: null }])),
+    },
+}).setMaxSampleCount(50000)
 
 chart.getDefaultAxisY().dispose()
 const channels = SIGNALS.map((signal, iSignal) => {
@@ -53,14 +65,12 @@ const channels = SIGNALS.map((signal, iSignal) => {
         .setAnimationScroll(false)
         .setMargins(iStack > 0 ? 5 : 0, iSignal === 0 ? 35 : iStack < SIGNALS.length - 1 ? 5 : 0)
     const series = chart
-        .addPointLineAreaSeries({
-            dataPattern: 'ProgressiveX',
+        .addLineSeries({
             automaticColorIndex: iSignal,
             yAxis: axisY,
         })
         .setName(`Channel ${iSignal + 1}`)
-        .setAreaFillStyle(emptyFill)
-        .setMaxSampleCount(50000)
+        .setDataSet(dataSet, { x: 'x', y: `y${iSignal}` })
         // Use 2 thickness for smooth anti-aliased thick lines with the best visual look
         .setStrokeStyle((style) => style.setThickness(2))
         .setIcon(ekgIcon)
@@ -73,10 +83,6 @@ const channels = SIGNALS.map((signal, iSignal) => {
 
     return { series, axisY }
 })
-
-// Add legend
-const legend = chart.addLegendBox(LegendBoxBuilders.HorizontalLegendBox)
-channels.forEach((channel) => legend.add(channel.series))
 
 // Add LCJS user interface button for resetting view.
 const buttonReset = chart
@@ -93,7 +99,7 @@ buttonReset.addEventListener('click', (event) => {
 })
 
 // Generate data sets that is repeated for each channel for demonstration purposes.
-const dataSets = [
+const randomData = [
     { length: Math.ceil(400 * Math.PI), func: (x) => 8 * Math.sin(x / 200) },
     { length: Math.ceil(3200 * Math.PI), func: (x) => 7 * Math.sin(x / 1600) },
     { length: Math.ceil(800 * Math.PI), func: (x) => 4 * (Math.cos(x / 400) + Math.sin(x / 200)) },
@@ -112,28 +118,23 @@ const dataSets = [
 // Stream data into series.
 let tStart = window.performance.now()
 let pushedDataCount = 0
-const dataPointsPerSecond = 1000 // 1000 Hz
-const xStep = 1000 / dataPointsPerSecond
 const streamData = () => {
     const tNow = window.performance.now()
     // NOTE: This code is for example purposes (streaming stable data rate without destroying browser when switching tabs etc.)
     // In real use cases, data should be pushed in when it comes.
     const shouldBeDataPointsCount = Math.floor((dataPointsPerSecond * (tNow - tStart)) / 1000)
     const newDataPointsCount = Math.min(shouldBeDataPointsCount - pushedDataCount, 1000) // Add max 1000 data points per frame into a series. This prevents massive performance spikes when switching tabs for long times
-    const seriesNewDataPoints = []
+    const newSamples = Object.fromEntries(Array.from({ length: SIGNALS.length }, (_, i) => [`y${i}`, []]))
     for (let iChannel = 0; iChannel < channels.length; iChannel++) {
-        const dataSet = dataSets[iChannel % dataSets.length]
-        const newDataPoints = []
+        const randomDataCh = randomData[iChannel % randomData.length]
+        const arr = newSamples[`y${iChannel}`]
         for (let iDp = 0; iDp < newDataPointsCount; iDp++) {
-            const x = (pushedDataCount + iDp) * xStep
-            const iData = (pushedDataCount + iDp) % dataSet.length
-            const y = dataSet[iData]
-            const point = { x, y }
-            newDataPoints.push(point)
+            const iData = (pushedDataCount + iDp) % randomDataCh.length
+            const y = randomDataCh[iData]
+            arr.push(y)
         }
-        seriesNewDataPoints[iChannel] = newDataPoints
     }
-    channels.forEach((channel, iChannel) => channel.series.appendJSON(seriesNewDataPoints[iChannel]))
+    dataSet.appendSamples(newSamples)
     pushedDataCount += newDataPointsCount
     requestAnimationFrame(streamData)
 }
