@@ -87,7 +87,7 @@ const channels = SIGNALS.map((signal, iSignal) => {
 // Add LCJS user interface button for resetting view.
 const buttonReset = chart
     .addUIElement()
-    .setText('Reset')
+    .setText('Reset view')
     .setPosition({ x: 0, y: 0 })
     .setOrigin(UIOrigins.LeftBottom)
     .setMargin({ left: 4, bottom: 4 })
